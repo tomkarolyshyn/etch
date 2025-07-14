@@ -314,7 +314,7 @@ class SettingsManager:
     @classmethod
     def get_settings(cls) -> AppSettings:
         if cls._instance is None:
-            print('Loading settings')
+            console.print('Loading settings')
             cls._instance = AppSettings.load()
         return cls._instance
 
