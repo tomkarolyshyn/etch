@@ -12,7 +12,7 @@ Apt / system library installs
 1.  build-essential
 2.  LLVM via ()
 
-### Etch Instalation.
+### Etch Installation.
 1.  Create a venv
 2.  pip install etch
 3.  etch setup
