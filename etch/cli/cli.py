@@ -135,14 +135,14 @@ def config_list(option: str = typer.Option('table', '--option', '-o', help='Outp
 
 @config_app.command('init')
 def config_init() -> None:
-    """initiize the current directory for the etch"""
+    """Initialize the current directory for the etch"""
     # settings = get_settings()
     typer.Exit(0)
 
 
 @config_app.command('install')
 def config_install() -> None:
-    """initiize the required tools for the etch"""
+    """Initialize the required tools for the etch"""
     # settings = get_settings()
     typer.Exit(0)
 
