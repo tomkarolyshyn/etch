@@ -1,0 +1,155 @@
+[project]
+name = "etch"
+version = "0.1.1"
+description = "A tool for accelerating embedded workflows with AI/ML generated kernels"
+authors = [{ name = "Tom Karolyshyn", email = "tomk@boolsi.com" }]
+readme = "README.md"
+keywords = ['python']
+requires-python = ">=3.11.7,<4.0"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Natural Language :: English",
+]
+
+dependencies = [
+    "pyyaml",
+    "typer>=0.16.0",    # needs to be past the 8.2 click issue
+    "rich",
+    "clang>=20",
+    "jinja2>=3.1.6",
+    "tzlocal",
+    "cmake==3.31.6",
+    "ninja==1.11.1.4",
+    "appdirs",
+    "dotenv",
+    "requests",
+    "pybind11",
+    "pyelftools>=0.32",
+    "pydantic>=2.11.4",
+    # lopper for BSP gen (RFU)
+    "lopper[server,yaml,dt,pcpp]==1.2.0", #https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/3164668064/Overview+of+Lopper
+]
+
+[project.scripts]
+etch = "etch.cli.cli:main"
+
+
+[project.urls]
+Repository = "https://github.com/tomkarolyshyn/etch"
+
+[tool.hatch.build]
+packages = ["etch"]
+include = ["data"]
+# exclude = []
+
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.2.0",
+    "pre-commit>=2.20.0",
+    "deptry>=0.22.0",
+    "ipdb",
+    "mypy>=1.12.0",
+    "python-dotenv>=1.0.1",
+    "pytest-cov>=4.0.0",
+    "requests>=2.32.0",
+    "ruff>=0.9.2",
+    "mkdocs>=1.4.2",
+    "mkdocs-material>=8.5.10",
+    "mkdocstrings[python]>=0.26.1",
+    "pytest-xdist>=3.2.1,<4",
+    "pyclean>=3.1.0",
+    "types-appdirs",
+    "types-requests",
+    "types-PyYAML",
+]
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[tool.mypy]
+files = ["etch"]
+python_version = '3.11'        # Or appropriate version
+disallow_untyped_defs = true
+disallow_any_unimported = true
+no_implicit_optional = true
+check_untyped_defs = true
+warn_return_any = true
+warn_unused_ignores = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = ["clang.*"]
+ignore_missing_imports = true
+follow_untyped_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+fix = true
+extend-exclude = ["static-analysis"]
+
+[tool.ruff.lint]
+select = [
+    # flake8-2020
+    "YTT",
+    # flake8-bandit
+    "S",
+    # flake8-bugbear
+    "B",
+    # flake8-builtins
+    "A",
+    # flake8-comprehensions
+    "C4",
+    # flake8-debugger
+    "T10",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+    # mccabe
+    "C90",
+    # pycodestyle
+    "E",
+    "W",
+    # pyflakes
+    "F",
+    # pygrep-hooks
+    "PGH",
+    # pyupgrade
+    "UP",
+    # ruff
+    "RUF",
+    # tryceratops
+    "TRY",
+    "N",   #pep8 naming
+]
+ignore = [
+    # LineTooLong
+    "E501",
+    # DoNotAssignLambda
+    "E731",
+    "F401",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
+[tool.ruff.format]
+preview = true
+quote-style = "single"
