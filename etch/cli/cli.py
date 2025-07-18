@@ -1,6 +1,7 @@
 import datetime
 import os
 import sys
+from rich.pretty import Pretty
 from importlib.metadata import version
 from pathlib import Path
 from typing import Annotated, Any
@@ -9,7 +10,7 @@ import typer
 import typer.completion
 from rich.table import Table
 
-from ..util.settings import get_settings
+from ..util.settings import get_settings, refresh_settings, AppSettings
 from ..util.util import console
 
 # Create a singleton console object and import it everywhere
@@ -88,16 +89,18 @@ def install_completion(shell: Annotated[str, typer.Option(help='Shell to install
 
 
 # create sub-apps
-config_app = typer.Typer()
+install_app = typer.Typer()
 kernel_app = typer.Typer()
 compile_app = typer.Typer()
+cfg_app = typer.Typer(invoke_without_command=True)
 prj_app = typer.Typer()
 
 # add sub-apps to main app
-app.add_typer(config_app, name='config', help='config commands')
+app.add_typer(install_app, name='install', help='install prerequisites for Etch')
 app.add_typer(kernel_app, name='kernel', help='kernel commands')
 app.add_typer(compile_app, name='compile', help='compile commands')
 app.add_typer(prj_app, name='project', help='project commands')
+app.add_typer(cfg_app, name='config', help='configure Etch settings commands')
 
 
 ############################################################
@@ -105,10 +108,12 @@ app.add_typer(prj_app, name='project', help='project commands')
 ############################################################
 
 
-@config_app.command('list')
-def config_list(option: str = typer.Option('table', '--option', '-o', help='Output format: table, json, toml')) -> None:
-    """Show current configuration settings."""
-    table = Table(title='🔧 App Configuration Settings')
+@install_app.command('list')
+def install_list(
+    option: str = typer.Option('table', '--option', '-o', help='Output format: table, json, toml'),
+) -> None:
+    """Show current installation settings."""
+    table = Table(title='🔧 App Installation Settings')
     table.add_column('Setting', style='cyan', no_wrap=True)
     table.add_column('Value', style='green')
     table.add_column('Type', style='yellow')
@@ -133,22 +138,22 @@ def config_list(option: str = typer.Option('table', '--option', '-o', help='Outp
     console.print(table)
 
 
-@config_app.command('init')
-def config_init() -> None:
+@install_app.command('init')
+def install_init() -> None:
     """Initialize the current directory for the etch"""
     # settings = get_settings()
     typer.Exit(0)
 
 
-@config_app.command('install')
-def config_install() -> None:
+@install_app.command('install')
+def install_install() -> None:
     """Initialize the required tools for the etch"""
     # settings = get_settings()
     typer.Exit(0)
 
 
-@config_app.command('check')
-def config_check() -> None:
+@install_app.command('check')
+def install_check() -> None:
     """Check the current etch setup"""
     # settings = get_settings()
     typer.Exit(0)
@@ -191,10 +196,75 @@ def prj_init(
 
 
 ############################################################
+## settings command
+############################################################
+@cfg_app.callback()
+def default_command(ctx: typer.Context) -> None:
+    """Default command for the subcommand group"""
+    if ctx.invoked_subcommand is None:
+        cfg_list()
+        # typer.echo('This is the default command!')
+        # Your default logic here
+
+
+@cfg_app.command('set', hidden=True)
+def cfg_set(
+    key: Annotated[str, typer.Argument(help='Setting key to update')],
+    value: Annotated[str, typer.Argument(help='New value for the setting')],
+    is_global: Annotated[bool, typer.Option('--global', '-g', help='Update global settings instead of local')] = False,
+) -> None:
+    """
+    Update a specific setting in the bside configuration.
+    """
+    from bside.settings import update_setting
+
+    if not update_setting(key, value, save=True):
+        console.print(f'[red]Failed to update setting {key}[/red]')
+    else:
+        console.print(f'[green]Setting {key} updated to {value}[/green]')
+
+
+@cfg_app.command('list', hidden=True)
+def cfg_list() -> None:
+    """Show information about the bside environment settings"""
+
+    info: dict[str, Any] = {}
+
+    # Project
+
+    # System
+    os.environ['ETCH_DEBUG'] = 'True'
+    settings = get_settings()
+    # settings._print_config_sources()
+    info['settings'] = settings.model_dump()
+
+    # console.print(Pretty(settings.model_dump(), indent_guides=True))
+
+    # # User authentication info
+    # info['auth'] = {
+    #     'email': settings.email or '',
+    #     'refresh_token': settings.refresh_token or '',
+    #     'has_api_key': bool(settings.api_key),
+    #     'has_access_token': bool(settings.access_token),
+    # }
+    # console.print_json(data=info, indent=4)
+    console.print(Pretty(info, indent_guides=True))
+
+    console.print(f'Debug before: {os.environ.get("ETCH_DEBUG", "Not set")}')
+    os.environ['ETCH_DEBUG'] = 'False'
+    console.print(f'Debug after: {os.environ.get("ETCH_DEBUG", "Not set")}')
+
+    settings = refresh_settings()
+    settings2 = AppSettings()
+    console.print(f'Settings debug: {settings2.debug}')
+
+    info['settings_after'] = settings.model_dump()
+    console.print(Pretty(info, indent_guides=True))
+
+
+############################################################
 ##
 ############################################################
-
-
 def main() -> None:
     app()
 
