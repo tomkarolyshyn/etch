@@ -161,13 +161,60 @@ def refresh_settings() -> AppSettings:
     return SettingsManager.reload()
 
 
-def set_value(key: str, value: Any, is_global: bool = False) -> bool:
-    """Set a value in the settings."""
-    settings = get_settings()
-    if hasattr(settings, key):
-        setattr(settings, key, value)
-        return save_settings(is_global=is_global)
+def _ensure_config_directory(config_file: Path) -> None:
+    """Ensure the configuration directory exists."""
+    config_file.parent.mkdir(parents=True, exist_ok=True)
+
+
+def _get_nested_value(obj: Any, key_path: str) -> Any:
+    """Get a nested value from an object using dot notation."""
+    keys = key_path.split('.')
+    current = obj
+    for key in keys:
+        if hasattr(current, key):
+            current = getattr(current, key)
+        else:
+            raise AttributeError(f"'{type(current).__name__}' object has no attribute '{key}'")
+    return current
+
+
+def _set_nested_value(obj: Any, key_path: str, value: Any) -> None:
+    """Set a nested value in an object using dot notation."""
+    keys = key_path.split('.')
+    current = obj
+
+    # Navigate to the parent object
+    for key in keys[:-1]:
+        if hasattr(current, key):
+            current = getattr(current, key)
+        else:
+            raise AttributeError(f"'{type(current).__name__}' object has no attribute '{key}'")
+
+    # Set the final value
+    final_key = keys[-1]
+    if hasattr(current, final_key):
+        setattr(current, final_key, value)
     else:
+        raise AttributeError(f"'{type(current).__name__}' object has no attribute '{final_key}'")
+
+
+def get_value(key: str) -> Any:
+    """Get a value from the settings using dot notation (e.g., 'workspace.build_dir')."""
+    settings = get_settings()
+    try:
+        return _get_nested_value(settings, key)
+    except AttributeError:
+        console.print(f'[red]Setting {key} does not exist in the configuration.[/red]')
+        return None
+
+
+def set_value(key: str, value: Any, is_global: bool = False) -> bool:
+    """Set a value in the settings using dot notation (e.g., 'workspace.build_dir')."""
+    settings = get_settings()
+    try:
+        _set_nested_value(settings, key, value)
+        return save_settings(is_global=is_global)
+    except AttributeError:
         console.print(f'[red]Setting {key} does not exist in the configuration.[/red]')
         return False
 
@@ -176,15 +223,34 @@ def save_settings(is_global: bool = False) -> bool:
     """Save the current settings to the appropriate config file."""
     config_file = GLOBAL_CONFIG_FILE if is_global else LOCAL_CONFIG_FILE
 
+    # Ensure the configuration directory exists
+    _ensure_config_directory(config_file)
+
     settings = get_settings()
     data = settings.model_dump()
-    for key, value in data.items():
-        if isinstance(value, Path):
-            data[key] = str(value)
 
-    with config_file.open('w') as f:
-        yaml.dump(data, f, default_flow_style=False, sort_keys=False)
-    return True
+    # Convert Path objects to strings for YAML serialization
+    def convert_paths(obj: Any) -> Any:
+        if isinstance(obj, Path):
+            return str(obj)
+        elif isinstance(obj, dict):
+            return {k: convert_paths(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_paths(item) for item in obj]
+        return obj
+
+    data = convert_paths(data)
+
+    try:
+        with config_file.open('w') as f:
+            yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+
+        config_type = 'global' if is_global else 'local'
+        console.print(f'{SUCCESS_SYMBOL} Settings saved to {config_type} config: {config_file}')
+        return True
+    except Exception as e:
+        console.print(f'{ERROR_SYMBOL} Failed to save settings: {e}')
+        return False
 
 
 #     if is_global:
