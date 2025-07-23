@@ -1,17 +1,18 @@
 import datetime
 import os
 import sys
-from rich.pretty import Pretty
 from importlib.metadata import version
 from pathlib import Path
 from typing import Annotated, Any
 
 import typer
 import typer.completion
+from rich.pretty import Pretty
 from rich.table import Table
 
-from ..util.settings import get_settings, refresh_settings, AppSettings
-from ..util.util import console
+from etch.util.install import display_status, install_all, install_tool
+from etch.util.settings import AppSettings, get_settings, refresh_settings
+from etch.util.util import console
 
 # Create a singleton console object and import it everywhere
 
@@ -46,48 +47,6 @@ def main_callback(
     pass
 
 
-# @app.command(name='--install-completion', hidden=True)
-# def install_completion(shell: Annotated[str, typer.Option(help='Shell to install completion for')] = '') -> None:
-#     """Install tab completion for the etch command."""
-
-#     if not shell:
-#         # Auto-detect shell
-#         shell = os.environ.get('SHELL', '').split('/')[-1]
-
-#     try:
-#         console.print(f'Installing completion for {shell}...')
-#         # This will install completion for the current script
-#         completion_code = typer.completion.get_completion_script(
-#             shell=shell, prog_name='etch', complete_var='_ETCH_COMPLETE'
-#         )
-
-#         # Installation depends on the shell
-#         if shell == 'bash':
-#             completion_file = Path.home() / '.bash_completion'
-#             completion_file.write_text(completion_code)
-#             console.print(f'[green]Completion installed to {completion_file}[/green]')
-#             console.print('Run: [bold]source ~/.bash_completion[/bold] or restart your shell')
-#         elif shell == 'zsh':
-#             completion_dir = Path.home() / '.zsh' / 'completions'
-#             completion_dir.mkdir(parents=True, exist_ok=True)
-#             completion_file = completion_dir / '_etch'
-#             completion_file.write_text(completion_code)
-#             console.print(f'[green]Completion installed to {completion_file}[/green]')
-#             console.print('Add to your ~/.zshrc: [bold]fpath=(~/.zsh/completions $fpath)[/bold]')
-#         elif shell == 'fish':
-#             completion_dir = Path.home() / '.config' / 'fish' / 'completions'
-#             completion_dir.mkdir(parents=True, exist_ok=True)
-#             completion_file = completion_dir / 'etch.fish'
-#             completion_file.write_text(completion_code)
-#             console.print(f'[green]Completion installed to {completion_file}[/green]')
-#         else:
-#             console.print(f'[yellow]Unsupported shell: {shell}[/yellow]')
-#             console.print('Supported shells: bash, zsh, fish')
-
-#     except Exception as e:
-#         console.print(f'[red]Error installing completion: {e}[/red]')
-
-
 # create sub-apps
 install_app = typer.Typer()
 kernel_app = typer.Typer()
@@ -100,55 +59,25 @@ app.add_typer(install_app, name='install', help='install prerequisites for Etch'
 app.add_typer(kernel_app, name='kernel', help='kernel commands')
 app.add_typer(compile_app, name='compile', help='compile commands')
 app.add_typer(prj_app, name='project', help='project commands')
-app.add_typer(cfg_app, name='config', help='configure Etch settings commands')
+app.add_typer(cfg_app, name='config', help='configure etch settings commands')
 
 
 ############################################################
-##  CONFIG COMMANDS
+##  INSTALL COMMANDS
 ############################################################
 
 
-@install_app.command('list')
-def install_list(
-    option: str = typer.Option('table', '--option', '-o', help='Output format: table, json, toml'),
-) -> None:
-    """Show current installation settings."""
-    table = Table(title='🔧 App Installation Settings')
-    table.add_column('Setting', style='cyan', no_wrap=True)
-    table.add_column('Value', style='green')
-    table.add_column('Type', style='yellow')
-
-    settings = get_settings()
-
-    config_dict = settings.model_dump(exclude_none=True)
-
-    for key, value in config_dict.items():
-        # Format the value for display
-        if isinstance(value, Path):
-            display_value = str(value)
-        elif isinstance(value, bool):
-            display_value = '✅ True' if value else '❌ False'
-        elif value is None:
-            display_value = '[dim]None[/dim]'
-        else:
-            display_value = str(value)
-
-        table.add_row(key, display_value, type(value).__name__)
-
-    console.print(table)
-
-
-@install_app.command('init')
+@install_app.command('menu')
 def install_init() -> None:
     """Initialize the current directory for the etch"""
     # settings = get_settings()
     typer.Exit(0)
 
 
-@install_app.command('install')
-def install_install() -> None:
-    """Initialize the required tools for the etch"""
-    # settings = get_settings()
+@install_app.command('status')
+def install_status() -> None:
+    """Show the status of the required tools for the etch"""
+    display_status()
     typer.Exit(0)
 
 
@@ -196,7 +125,7 @@ def prj_init(
 
 
 ############################################################
-## settings command
+## Settings command
 ############################################################
 @cfg_app.callback()
 def default_command(ctx: typer.Context) -> None:
@@ -214,19 +143,18 @@ def cfg_set(
     is_global: Annotated[bool, typer.Option('--global', '-g', help='Update global settings instead of local')] = False,
 ) -> None:
     """
-    Update a specific setting in the bside configuration.
+    Update a specific setting in the configuration.
     """
-    from bside.settings import update_setting
 
-    if not update_setting(key, value, save=True):
-        console.print(f'[red]Failed to update setting {key}[/red]')
-    else:
-        console.print(f'[green]Setting {key} updated to {value}[/green]')
+    # if not update_setting(key, value, save=True):
+    #     console.print(f'[red]Failed to update setting {key}[/red]')
+    # else:
+    #     console.print(f'[green]Setting {key} updated to {value}[/green]')
 
 
 @cfg_app.command('list', hidden=True)
 def cfg_list() -> None:
-    """Show information about the bside environment settings"""
+    """Show information about the etch environment settings"""
 
     info: dict[str, Any] = {}
 

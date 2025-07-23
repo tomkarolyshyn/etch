@@ -3,8 +3,9 @@ name = "etch"
 version = "0.1.1"
 description = "A tool for accelerating embedded workflows with AI/ML generated kernels"
 authors = [{ name = "Tom Karolyshyn", email = "tomk@boolsi.com" }]
+maintainers = [{ name = "Tom Karolyshyn", email = "tomk@boolsi.com" }]
 readme = "README.md"
-keywords = ['python']
+keywords = ['python', 'cli', 'embedded', 'ML']
 requires-python = ">=3.11.7,<4.0"
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -35,7 +36,7 @@ dependencies = [
     "pydantic",
     "pydantic-settings",
     # lopper for BSP gen (RFU)
-    "lopper[server,yaml,dt,pcpp]==1.2.0", #https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/3164668064/Overview+of+Lopper
+    # "lopper[server,yaml,dt,pcpp]==1.2.0", #https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/3164668064/Overview+of+Lopper
 ]
 
 [project.scripts]
@@ -47,7 +48,7 @@ Repository = "https://github.com/tomkarolyshyn/etch"
 
 [tool.hatch.build]
 packages = ["etch"]
-include = ["etch/data/**"]
+include = ["examples/**"]
 # exclude = []
 
 

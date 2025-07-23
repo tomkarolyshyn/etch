@@ -5,7 +5,7 @@ from typing import Any, Literal, Self
 import appdirs
 import yaml
 from pydantic import BaseModel, Field
-from pydantic_settings import BaseSettings, SettingsConfigDict, YamlConfigSettingsSource, PydanticBaseSettingsSource
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict, YamlConfigSettingsSource
 
 from .constants import ERROR_SYMBOL, GOOD_SYMBOL, INFO_SYMBOL, SUCCESS_SYMBOL, WARNING_SYMBOL, console
 
@@ -29,12 +29,6 @@ class WorkspaceConfig(BaseModel):
 #     base_url: str = Field(default='http://localhost:8000', description='Base URL for the API')
 #     api_key: str | None = Field(default=None, description='API key for authentication')
 #     refresh_token: str | None = Field(default=None, description='Refresh token for API sessions')
-
-
-class ToolPath(BaseModel):
-    name: str
-    path: Path
-    validated: bool = Field(default=False, description='Whether the path has been validated')
 
 
 class ConfigFile(YamlConfigSettingsSource):
@@ -73,22 +67,7 @@ class AppSettings(BaseSettings):
     api_key: str | None = Field(default=None, description='API authentication key')
     refresh_token: str | None = Field(default=None, description='API refresh token')
 
-    install_dir: Path = Path(appdirs.user_data_dir('bside')) / 'install'
-
-    # install_dir: Path = Field(
-    #     default=Path(appdirs.user_data_dir('etch')),
-    #     description='Installation directory for Etch',
-    # )
-
-    # Paths
-    # tools: list[ToolPath] = Field(
-    #     default_factory=lambda: [
-    #         ToolPath(name='cmake', path=Path('cmake'), validated=False),
-    #         ToolPath(name='ninja', path=Path('ninja'), validated=False),
-    #         ToolPath(name='clang', path=Path('clang'), validated=False),
-    #     ],
-    #     description='List of tool paths with validation status',
-    # )
+    install_dir: Path = Path(appdirs.user_data_dir('etch')) / 'install'
 
     # workspace: WorkspaceConfig = Field(default=WorkspaceConfig(), description='Workspace paths')
 
@@ -101,6 +80,7 @@ class AppSettings(BaseSettings):
         case_sensitive=False,
         # Create missing directories if needed
         extra='ignore',  # Ignore unknown fields
+        yaml_file=[GLOBAL_CONFIG_FILE],
     )
 
     @classmethod
@@ -118,7 +98,7 @@ class AppSettings(BaseSettings):
             env_settings,
             dotenv_settings,
             ConfigFile(settings_cls, yaml_file=GLOBAL_CONFIG_FILE),
-            ConfigFile(settings_cls, yaml_file=LOCAL_CONFIG_FILE),
+            file_secret_settings,
         )
 
 
@@ -133,7 +113,7 @@ class SettingsManager:
     @classmethod
     def get_settings(cls) -> AppSettings:
         if cls._instance is None:
-            console.print('Loading settings')
+            # console.print('Loading settings')
             cls._instance = AppSettings()
         return cls._instance
 
@@ -247,10 +227,11 @@ def save_settings(is_global: bool = False) -> bool:
 
         config_type = 'global' if is_global else 'local'
         console.print(f'{SUCCESS_SYMBOL} Settings saved to {config_type} config: {config_file}')
-        return True
     except Exception as e:
         console.print(f'{ERROR_SYMBOL} Failed to save settings: {e}')
         return False
+    else:
+        return True
 
 
 #     if is_global:
