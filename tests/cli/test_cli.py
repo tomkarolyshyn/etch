@@ -7,7 +7,7 @@ import pytest
 import typer
 from typer.testing import CliRunner
 
-from etch.cli.cli import app, config_app, install_completion, main, prj_app, version_callback
+from etch.cli.cli import app, config_app, main, prj_app, version_callback
 from etch.util.settings import AppSettings, SettingsManager
 
 
@@ -131,71 +131,6 @@ class TestProjectCommands:
     #     result = runner.invoke(prj_app, ['create', 'test-project', '--board', 'test-board'])
     #     assert result.exit_code != 0
     #     assert 'Missing argument' in result.stdout
-
-
-# class TestCompletionCommand:
-#     """Test completion installation command."""
-
-#     def test_install_completion_auto_detect(self, runner: CliRunner) -> None:
-#         """Test completion installation with auto-detect."""
-#         with patch.dict(os.environ, {'SHELL': '/bin/bash'}):
-#             with patch('pathlib.Path.write_text') as mock_write:
-#                 result = runner.invoke(app, ['--install-completion'])
-#                 assert result.exit_code == 0
-#                 assert 'Installing completion for bash' in result.stdout
-#                 mock_write.assert_called_once()
-
-#     def test_install_completion_bash(self, runner: CliRunner) -> None:
-#         """Test completion installation for bash."""
-#         with patch('pathlib.Path.write_text') as mock_write:
-#             result = runner.invoke(app, ['--install-completion', '--shell', 'bash'])
-#             assert result.exit_code == 0
-#             assert 'Installing completion for bash' in result.stdout
-#             mock_write.assert_called_once()
-
-#     def test_install_completion_zsh(self, runner: CliRunner) -> None:
-#         """Test completion installation for zsh."""
-#         with patch('pathlib.Path.mkdir') as mock_mkdir:
-#             with patch('pathlib.Path.write_text') as mock_write:
-#                 result = runner.invoke(app, ['--install-completion', '--shell', 'zsh'])
-#                 assert result.exit_code == 0
-#                 assert 'Installing completion for zsh' in result.stdout
-#                 mock_mkdir.assert_called_once()
-#                 mock_write.assert_called_once()
-
-#     def test_install_completion_fish(self, runner: CliRunner) -> None:
-#         """Test completion installation for fish."""
-#         with patch('pathlib.Path.mkdir') as mock_mkdir:
-#             with patch('pathlib.Path.write_text') as mock_write:
-#                 result = runner.invoke(app, ['--install-completion', '--shell', 'fish'])
-#                 assert result.exit_code == 0
-#                 assert 'Installing completion for fish' in result.stdout
-#                 mock_mkdir.assert_called_once()
-#                 mock_write.assert_called_once()
-
-#     def test_install_completion_unsupported_shell(self, runner: CliRunner) -> None:
-#         """Test completion installation for unsupported shell."""
-#         result = runner.invoke(app, ['--install-completion', '--shell', 'unsupported'])
-#         assert result.exit_code == 0
-#         assert 'Unsupported shell: unsupported' in result.stdout
-
-#     def test_install_completion_error_handling(self, runner: CliRunner) -> None:
-#         """Test completion installation error handling."""
-#         with patch('typer.completion.get_completion_script', side_effect=Exception('Test error')):
-#             result = runner.invoke(app, ['--install-completion', '--shell', 'bash'])
-#             assert result.exit_code == 0
-#             assert 'Error installing completion: Test error' in result.stdout
-
-#     def test_install_completion_function_directly(self, tmp_path: Path) -> None:
-#         """Test install_completion function directly."""
-#         with patch.dict(os.environ, {'SHELL': '/bin/bash'}):
-#             with patch('pathlib.Path.home', return_value=tmp_path):
-#                 with patch('typer.completion.get_completion_script', return_value='completion code'):
-#                     install_completion('')
-
-#                     completion_file = tmp_path / '.bash_completion'
-#                     assert completion_file.exists()
-#                     assert completion_file.read_text() == 'completion code'
 
 
 class TestSubApps:

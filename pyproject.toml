@@ -1,6 +1,6 @@
 [project]
 name = "boolsi-etch"
-version = "0.1.2"
+version = "0.2.0"
 description = "A tool for accelerating embedded workflows with AI/ML generated kernels"
 authors = [{ name = "Tom Karolyshyn", email = "tomk@boolsi.com" }]
 readme = "README.md"
@@ -69,6 +69,7 @@ dev = [
     "types-appdirs",
     "types-requests",
     "types-PyYAML",
+    "bump-my-version",
 ]
 
 
@@ -79,7 +80,7 @@ build-backend = "hatchling.build"
 
 [tool.mypy]
 files = ["etch"]
-python_version = '3.11'        # Or appropriate version
+python_version = '3.11'        # left back in hoping for 3.11 support
 disallow_untyped_defs = true
 disallow_any_unimported = true
 no_implicit_optional = true
@@ -152,3 +153,20 @@ ignore = [
 [tool.ruff.format]
 preview = true
 quote-style = "single"
+
+[tool.bumpversion]
+current_version_pattern = "version = \"(?P<version>.*)\""
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
+serialize = ["{major}.{minor}.{patch}"]
+tag = true
+sign_tags = false
+tag_name = "v{new_version}"
+tag_message = "Bump version: {current_version} → {new_version}"
+allow_dirty = false
+commit = true
+message = "Bump version: {current_version} → {new_version}"
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
