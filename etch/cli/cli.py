@@ -12,7 +12,8 @@ from rich.table import Table
 from ..util.settings import get_settings
 from ..util.util import console
 
-# Create a singleton console object and import it everywhere
+__version__ = version('boolsi-etch')
+
 
 app = typer.Typer(
     pretty_exceptions_show_locals=False,  # enable the showing of local variables in the exception
@@ -20,13 +21,6 @@ app = typer.Typer(
     no_args_is_help=True,
     context_settings={'help_option_names': ['-h', '--help']},
 )
-# app.add_typer(project.app, name='project', help='Manage the current project')
-# app.add_typer(function.app, name='function', help='functions acceleration commands')
-# app.add_typer(hw.app, name='hw', help='Hardware Kernel build commands')
-# app.add_typer(setup.app, name='setup', help='System dependency installer for Etch')
-
-
-__version__ = version('boolsi-etch')
 
 
 def version_callback(value: bool) -> None:
