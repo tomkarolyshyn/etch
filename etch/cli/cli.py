@@ -26,12 +26,12 @@ app = typer.Typer(
 # app.add_typer(setup.app, name='setup', help='System dependency installer for Etch')
 
 
-__version__ = version('etch')
+__version__ = version('boolsi-etch')
 
 
 def version_callback(value: bool) -> None:
     if value:
-        console.print(f'etch {__version__}')
+        console.print(f'boolsi-etch {__version__}')
         raise typer.Exit()
 
 
