@@ -31,7 +31,7 @@ __version__ = version('boolsi-etch')
 
 def version_callback(value: bool) -> None:
     if value:
-        console.print(f'boolsi-etch {__version__}')
+        console.print(f'[italic]boolsi[/italic]-etch {__version__}')
         raise typer.Exit()
 
 
