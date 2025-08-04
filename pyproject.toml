@@ -1,6 +1,6 @@
 [project]
 name = "boolsi-etch"
-version = "0.1.2"
+version = "0.2.0"
 description = "A tool for accelerating embedded workflows with AI/ML generated kernels"
 authors = [{ name = "Tom Karolyshyn", email = "tomk@boolsi.com" }]
 readme = "README.md"
