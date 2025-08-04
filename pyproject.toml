@@ -69,6 +69,7 @@ dev = [
     "types-appdirs",
     "types-requests",
     "types-PyYAML",
+    "bump-my-version",
 ]
 
 
